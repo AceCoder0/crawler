@@ -3,4 +3,4 @@
 *.json
 *.html
 *.txt
-*.lm_path.py
+*/lm_path.py
