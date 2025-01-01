@@ -4,12 +4,13 @@ import numpy as np
 from lxml import html
 from itertools import combinations
 from tqdm import tqdm
-from multiprocessing import Pool
-from collections import Counter
 from sklearn.metrics.pairwise import cosine_similarity
 from collections import defaultdict, Counter
 from lxml import html
 from bs4 import BeautifulSoup
+import json
+from html_similarity.style_similarity import style_similarity
+from html_similarity.structural_similarity import structural_similarity
 
 
 def dom_to_feature_vector(html_str):
@@ -22,13 +23,9 @@ def dom_to_feature_vector(html_str):
     return feature_vector
 
 def ss_distance(html_str1, html_str2):
-    from html_similarity.style_similarity import style_similarity
-    from html_similarity.structural_similarity import structural_similarity
-
-
-    def similarity(document_1, document_2, k=0.5):
-        return k * structural_similarity(document_1, document_2) + (1 - k) * style_similarity(document_1, document_2)
-    return 1-similarity(html_str1, html_str2)
+    # def similarity(document_1, document_2, k=0.5):
+    #     return k * structural_similarity(document_1, document_2) + (1 - k) * style_similarity(document_1, document_2)
+    return 1-structural_similarity(html_str1, html_str2)
 
 def remove_script_style(html_str):
     """
@@ -98,7 +95,7 @@ def compute_distance_matrix(html_list, dist_func=calculate_feature_distance):
     print(f"{n=}, {len(pairs)=}")
     # 使用tqdm显示进度条
     for i, j in tqdm(pairs, desc="Calculating distances"):
-            distance = calculate_feature_distance(html_list[i], html_list[j])
+            distance = dist_func(html_list[i], html_list[j])
             distance_matrix[i, j] = distance
             distance_matrix[j, i] = distance
     
@@ -141,14 +138,14 @@ def load_html_content(html_data):
 # 示例用法
 if __name__ == "__main__":
     # 输入数据：包含URL和文件路径的字典列表
-    import json
+
     html_data = json.load(open('test/https--www-zaobao-com-/table.json'))[:500]
 
     # 加载HTML内容
     load_html_content(html_data)
 
     # 对HTML进行聚类
-    n_clusters, clustered_data = cluster_htmls(html_data, eps=0.015, min_samples=2)
+    n_clusters, clustered_data = cluster_htmls(html_data, eps=0.25, min_samples=2)
 
     # 输出聚类数量
     print(f"Number of clusters: {n_clusters}")
