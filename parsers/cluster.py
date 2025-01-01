@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 import json
 from html_similarity.style_similarity import style_similarity
 from html_similarity.structural_similarity import structural_similarity
+from html_similarity.semantic_similarity import semantic_distance
 
 
 def dom_to_feature_vector(html_str):
@@ -22,7 +23,7 @@ def dom_to_feature_vector(html_str):
     feature_vector = [tag_counter.get(tag, 0) for tag in ['div', 'p', 'a', 'span', 'img', 'h1', 'h2', 'h3', 'ul', 'li']]
     return feature_vector
 
-def ss_distance(html_str1, html_str2):
+def structrual_distance(html_str1, html_str2):
     # def similarity(document_1, document_2, k=0.5):
     #     return k * structural_similarity(document_1, document_2) + (1 - k) * style_similarity(document_1, document_2)
     return 1-structural_similarity(html_str1, html_str2)
@@ -101,6 +102,9 @@ def compute_distance_matrix(html_list, dist_func=calculate_feature_distance):
     
     return distance_matrix
 
+def structrual_semantic_distance(html_list):
+    structrual_mat = compute_distance_matrix(html_list, dist_func=structrual_distance)
+    
 
 def cluster_htmls(html_data, eps=0.5, min_samples=2, eplion=1e-5):
     """对HTML列表进行聚类"""
